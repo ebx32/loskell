@@ -251,6 +251,50 @@ Once the program is compiled, the last step left is to run it, this step is call
 
 In, say, Go, each compiled application has its own copy of Go’s runtime directly embedded in it. If the language is run inside an interpreter or VM, then the runtime lives there. This is how most implementations of languages like Java, Python, and JavaScript work.
 
+#### Single-pass compilers, tree-walk interpreters, and transpilers
+
+**Single-pass compilers** reads the source code once and generates the output "on the fly", without building the AST or intermediate representation.
+
+This is why programming languages like Pascal do not allow a function call before it's declared. Older compilers had to work with limited amount of memory and a lot of them wouldn't revisit previously parsed parts of the code, which is why function declarations come before it's called.
+
+Some programming languages begin executing code right after parsing it to an AST (with maybe a bit of static analysis applied). To run the program, the interpreter traverses the syntax tree one branch and leaf at a time, evaluating each node as it goes. These types of interpreters are called **tree-walk interpreters**.
+
+A **transpiler** (source-to-source compiler) converts code from one high-level language to another high-level language. Writing a complete back end for a language can be a lot of work.
+
+If you've ever made a CHIP-8 emulator and wanted to run it on the web, one way of doing that is via WebAssembly (WASM). You write code in Rust/C, and compile it using rustc/clang into WASM which the browser runtime (VM) uses.
+
+> [!tip]
+>
+> The front end, scanner and parser, of a transpiler looks like other compilers. Then, if the source language is only a simple syntactic skin over the target language, it may skip analysis entirely and go straight to outputting the analogous syntax in the destination language.
+>
+> If the two languages are more semantically different, you’ll see more of the typical phases of a full compiler including analysis and possibly even optimization. Then, when it comes to code generation, instead of outputting some binary language like machine code, you produce a string of grammatically correct source (well, destination) code in the target language.
+>
+> Either way, you then run that resulting code through the output language’s existing compilation pipeline, and you’re good to go.
+
+#### Compilers and Interpreters
+
+**Compilation** is an *implementation* technique that involves translating a source language to some other lower-level form like machine code or bytecode. When you traspile to another high-level language, you're also compiling. However, we don't execute the code. This is done by the user.
+
+**Interpreters** on the other hand, takes a source code and executes it immediately. Running it without compilation.
+
+> GCC and Clang take your C code and compile it to machine code. An end user runs that executable directly and may never even know which tool was used to compile it. So those are compilers for C.
+
+<details>
+
+<summary> CPython and Go </summary>
+
+But what of CPython? When you run your Python program using it, the code is parsed and converted to an internal bytecode format, which is then executed inside the VM. From the user’s perspective, this is clearly an interpreter—they run their program from source. But if you look under CPython’s scaly skin, you’ll see that there is definitely some compiling going on.
+
+The answer is that it is both. CPython is an interpreter, and it has a compiler.
+
+The Go tool is even more of a horticultural curiosity. If you run go build, it compiles your Go source code to machine code and stops. If you type go run, it does that, then immediately executes the generated executable.
+
+So go is a compiler (you can use it as a tool to compile code without running it), is an interpreter (you can invoke it to immediately run a program from source), and also has a compiler (when you use it as an interpreter, it is still compiling internally).
+
+</details>
+
+![](./assets/venn.png)
+
 ## References
 
 - https://en.wikipedia.org/wiki/Loop_unrolling
