@@ -162,9 +162,49 @@ You can look into more optimization strategies like “common subexpression elim
 
 #### Code Generation
 
-Code generation is the final phase of a compiler and it's where we convert our optimized code to some kind of primitive assembly-like instructions which are read by a CPU.
+Code generation is the final phase of a compiler. In this phase, we convert our optimized intermediate representation into machine code or some lower-level instructions that can eventually be executed by a CPU.
 
-This phase is the **back-end**. And there are few decisions we'd want to make here, like what instruction set architecture do we want to compile our code for, or if we're generating instructions for a real CPU or a virtual one. For example, code compiled for x86 architecture won't run on ARM, and vice versa. Once solution to this was for compilers to produce "virtual machine code", which would run on some virtual machine. This was called **p-code (portable code)**, but now we call it **bytecode**, because each instruction is 1 byte long.
+This phase belongs to the back end of the compiler. Here we must decide things such as:
+
+- Which instruction set architecture (ISA) we're targeting (x86-64, ARM, RISC-V, etc.).
+- Whether we're generating native machine code or instructions for a virtual machine.
+
+For example, machine code compiled for x86-64 won't run on ARM, and vice versa.
+
+One solution to this portability problem was to generate instructions for a virtual machine instead of a physical CPU. Historically, these instructions were called p-code (portable code). Today, we usually call them bytecode.
+
+```asm
+(gdb) disassemble main
+Dump of assembler code for function main:
+   0x0000000000400466 <+0>:     push   rbp
+   0x0000000000400467 <+1>:     mov    rbp,rsp
+   0x000000000040046a <+4>:     mov    edi,0x401180
+   0x000000000040046f <+9>:     mov    eax,0x0
+   0x0000000000400474 <+14>:    call   0x400370 <printf@plt>
+   0x0000000000400479 <+19>:    mov    eax,0x0
+   0x000000000040047e <+24>:    pop    rbp
+   0x000000000040047f <+25>:    ret
+End of assembler dump.
+(gdb) x/s 0x401180
+0x401180:       "hello, world"
+(gdb)
+```
+
+#### Virtual Machine
+
+If a compiler produces bytecode, it needs a virtual machine (VM) to execute that bytecode because real CPUs only understand machine code.
+
+Another approach is to write a compiler for each target architecture that translates the bytecode into native machine code. In this case, the bytecode acts as an intermediate representation (IR).
+
+Executing bytecode through a VM is generally slower than executing native machine code because the VM must interpret or otherwise process each bytecode instruction at runtime. In exchange, we gain simplicity and portability.
+
+A common approach is to implement the VM in C because C compilers exist for many platforms. By recompiling the VM itself for a different machine, the same bytecode can run unchanged on that machine.
+
+#### Runtime
+
+Once the program is compiled, the last step left is to run it, this step is called the runtime. Essentially, it's everything that exists to support a program while it's executing. For example, a language which automatically manages the memory requires a garbage collector in order to reclaim the unused bits.
+
+In, say, Go, each compiled application has its own copy of Go’s runtime directly embedded in it. If the language is run inside an interpreter or VM, then the runtime lives there. This is how most implementations of languages like Java, Python, and JavaScript work.
 
 ## References
 
