@@ -190,6 +190,51 @@ End of assembler dump.
 (gdb)
 ```
 
+<details>
+
+<summary>The Stack</summary>
+
+##### What happens when we execute code?
+
+The code block shown above is a compiled C code which prints "hello, world"
+
+```c
+#include <stdio.h>
+
+int main() {
+  printf("hello, world");
+  return 0;
+}
+```
+
+When we first run our code, the operating system creates something called a **stack frame** for the `main()` function. This is done in 2 steps,
+
+```asm
+push rbp
+mov rbp, rsp
+```
+
+`push rbp` stores the value of the base pointer in some memory on the newly created stack frame for `main()` and `mov rbp, rsp` makes the base pointer now point to the top of the stack.
+
+```
+                                           push rbp                       mov rbp, rsp
+        +=========+                       +=========+                     +=========+
+0x2000  | old_rbp | <-- rbp               |   ...   |                     |   ...   |
+        +=========+                       +=========+                     +=========+
+        |   ...   |          ===> 0x2ff0  |   smtn  |        ===> 0x2ff0  |   smtn  |
+        +=========+                       +=========+                     +=========+
+0x2ff0  |   smtn  | <-- rsp       0x2ff8  |  0x2000 | <-- rsp     0x2ff8  |  0x2000 | <-- rsp, rbp
+        +=========+                       +=========+                     +=========+
+```
+
+`0x2ff8` is now the start of the new stack from for `main()`.
+
+> [!NOTE]
+> The stack grows downwards, contrary to the stack you've learnt in your data structures and algorithms class. Though, it works the same way.
+
+
+</details>
+
 #### Virtual Machine
 
 If a compiler produces bytecode, it needs a virtual machine (VM) to execute that bytecode because real CPUs only understand machine code.
